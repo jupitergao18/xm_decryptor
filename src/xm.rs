@@ -132,7 +132,10 @@ impl From<Tag> for XMInfo {
                 .map(|f| f.content().text().unwrap_or_default().to_string()),
             encoding_technology: value
                 .get("TSSE")
-                .map(|f| f.content().text().unwrap_or_default().to_string()),
+                // For mp3 files, this value can be something like "\0\0qTwMiLAAAJ3L79",
+                // which we need to change to "//qTwMiLAAAJ3L79" for it to be base64 decodable.
+                // This seems to be a bug in the ID3 library
+                .map(|f| f.content().text().unwrap_or_default().to_string().replace('\0', '/')),
         }
     }
 }
@@ -166,7 +169,9 @@ impl XMInfo {
         } else if header_str.contains("wav") {
             "wav"
         } else {
-            "m4a"
+            // header_str: h"dy$bit@slb1n>^&pa`im#hlzw?
+            // in this case, it's likely an mp3 file that has no dedicated magic string
+			"mp3"
         };
 
         format!(
