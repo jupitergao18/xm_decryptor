@@ -6,15 +6,15 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aes = "0.8.3"
-base64 = "0.21.5"
+aes = "0.8.4"
+base64 = "0.21.7"
 cbc = "0.1.2"
 hex = "0.4.3"
 wasmer = "6.1.0"
 wasmer-compiler-cranelift = "6.1.0"
-bitflags = "2.0"
-byteorder = "1.4"
-flate2 = "1"
+bitflags = "2.9.4"
+byteorder = "1.5.0"
+flate2 = "1.1.4"
 
 [profile.release]
 lto = true

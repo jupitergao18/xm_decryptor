@@ -7,7 +7,7 @@ use bitflags::bitflags;
 use byteorder::{BigEndian, ByteOrder, WriteBytesExt};
 use std::cmp;
 use std::fs;
-use std::io::{self, Read, Write};
+use std::io::{self, BufReader, Read, Write};
 use std::ops::Range;
 use std::path::Path;
 
@@ -73,7 +73,7 @@ impl Header {
 }
 
 impl Header {
-    fn decode(mut reader: impl io::Read) -> crate::id3::Result<Header> {
+    fn decode(mut reader: impl Read) -> crate::id3::Result<Header> {
         let mut header = [0; 10];
         let nread = reader.read(&mut header)?;
         let base_header = Self::decode_base_header(&header[..nread])?;
@@ -158,13 +158,13 @@ impl Header {
     }
 }
 
-pub fn decode(mut reader: impl io::Read) -> crate::id3::Result<Tag> {
+pub fn decode(mut reader: impl Read) -> crate::id3::Result<Tag> {
     let header = Header::decode(&mut reader)?;
 
     decode_remaining(reader, header)
 }
 
-fn decode_remaining(mut reader: impl io::Read, header: Header) -> crate::id3::Result<Tag> {
+fn decode_remaining(mut reader: impl Read, header: Header) -> crate::id3::Result<Tag> {
     match header.version {
         Version::Id3v22 => {
             // Limit the reader only to the given tag_size, don't return any more bytes after that.
@@ -179,7 +179,7 @@ fn decode_remaining(mut reader: impl io::Read, header: Header) -> crate::id3::Re
         }
         Version::Id3v23 => {
             // Unsynchronization is applied to the whole tag, excluding the header.
-            let mut reader: Box<dyn io::Read> = if header.flags.contains(Flags::UNSYNCHRONISATION) {
+            let mut reader: Box<dyn Read> = if header.flags.contains(Flags::UNSYNCHRONISATION) {
                 Box::new(unsynch::Reader::new(reader))
             } else {
                 Box::new(reader)
@@ -222,7 +222,7 @@ fn decode_remaining(mut reader: impl io::Read, header: Header) -> crate::id3::Re
     }
 }
 
-pub fn decode_v2_frames(mut reader: impl io::Read) -> crate::id3::Result<Tag> {
+pub fn decode_v2_frames(mut reader: impl Read) -> crate::id3::Result<Tag> {
     let mut tag = Tag::with_version(Version::Id3v22);
     // Add all frames, until either an error is thrown or there are no more frames to parse
     // (because of EOF or a Padding).
@@ -311,8 +311,8 @@ impl Encoder {
     /// Encodes the specified [`Tag`] using the settings set in the [`Encoder`].
     ///
     /// Note that the plain tag is written, regardless of the original contents. To safely encode a
-    /// tag to an MP3 file, use [`Encoder::encode_to_path`].
-    pub fn encode(&self, tag: &Tag, mut writer: impl io::Write) -> crate::id3::Result<()> {
+    /// tag to an MP3 file, use [`Encoder::write_to_path`].
+    pub fn encode(&self, tag: &Tag, mut writer: impl Write) -> crate::id3::Result<()> {
         // remove frames which have the flags indicating they should be removed
         let saved_frames = tag
             .frames()
@@ -397,20 +397,20 @@ impl Default for Encoder {
     }
 }
 
-pub fn locate_id3v2(
-    mut reader: impl io::Read + io::Seek,
-) -> crate::id3::Result<Option<Range<u64>>> {
+pub fn locate_id3v2(mut reader: impl Read + io::Seek) -> crate::id3::Result<Option<Range<u64>>> {
     let header = match Header::decode(&mut reader) {
         Ok(v) => v,
-        Err(err) => match err.kind {
-            ErrorKind::NoTag => return Ok(None),
-            _ => return Err(err),
-        },
+        Err(err) => {
+            return match err.kind {
+                ErrorKind::NoTag => Ok(None),
+                _ => Err(err),
+            };
+        }
     };
 
     let tag_size = header.tag_size();
     reader.seek(io::SeekFrom::Start(tag_size))?;
-    let num_padding = reader
+    let num_padding = BufReader::new(reader)
         .bytes()
         .take_while(|rs| rs.as_ref().map(|b| *b == 0x00).unwrap_or(false))
         .count();

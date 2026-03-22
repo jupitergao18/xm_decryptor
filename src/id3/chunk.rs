@@ -14,11 +14,11 @@ const CHUNK_HEADER_LEN: u32 = TAG_LEN + SIZE_LEN;
 
 const ID3_TAG: ChunkTag = ChunkTag(*b"ID3 ");
 
-/// Attempts to load a ID3 tag from the given chunk stream.
+/// Attempts to load an ID3 tag from the given chunk stream.
 pub fn load_id3_chunk<F, R>(mut reader: R) -> crate::id3::Result<Tag>
 where
     F: ChunkFormat,
-    R: io::Read + io::Seek,
+    R: Read + Seek,
 {
     let root_chunk = ChunkHeader::read_root_chunk_header::<F, _>(&mut reader)?;
 
@@ -54,7 +54,7 @@ pub fn write_id3_chunk_file<F: ChunkFormat>(
         let mut writer;
         let mut offset = 0;
 
-        // If there is a ID3 chunk, use it. Otherwise, create one.
+        // If there is an ID3 chunk, use it. Otherwise, create one.
         id3_chunk = if let Some(chunk) = id3_chunk_option {
             let id3_tag_pos = file.stream_position()?;
             let id3_tag_end_pos = id3_tag_pos
@@ -127,7 +127,7 @@ pub fn write_id3_chunk_file<F: ChunkFormat>(
                 .ok_or_else(|| Error::new(ErrorKind::InvalidInput, "ID3 chunk max size reached"))?;
         }
 
-        // We must flush manually to prevent silecing write errors.
+        // We must flush manually to prevent silent write errors.
         writer.flush()?;
     }
 
@@ -216,7 +216,7 @@ impl ChunkFormat for AiffFormat {
     type Endianness = BigEndian;
 
     const ROOT_TAG: ChunkTag = ChunkTag(*b"FORM");
-    // AIFF may have many formats, beign AIFF and AIFC the most common. Technically, it
+    // AIFF may have many formats, begin AIFF and AIFC the most common. Technically, it
     // can be anything, so we won't check those.
     const ROOT_FORMAT: Option<ChunkTag> = None;
 }
@@ -248,7 +248,7 @@ impl ChunkHeader {
     pub fn read_root_chunk_header<F, R>(mut reader: R) -> crate::id3::Result<Self>
     where
         F: ChunkFormat,
-        R: io::Read,
+        R: Read,
     {
         let invalid_header_error = Error::new(ErrorKind::InvalidInput, "invalid chunk header");
 
@@ -273,10 +273,10 @@ impl ChunkHeader {
             .try_into()
             .expect("slice with incorrect length");
 
-        if let Some(format_tag) = F::ROOT_FORMAT {
-            if chunk_format != format_tag {
-                return Err(invalid_header_error);
-            }
+        if let Some(format_tag) = F::ROOT_FORMAT
+            && chunk_format != format_tag
+        {
+            return Err(invalid_header_error);
         }
 
         Ok(Self { tag, size })
@@ -291,7 +291,7 @@ impl ChunkHeader {
     pub fn read<F, R>(mut reader: R) -> io::Result<Self>
     where
         F: ChunkFormat,
-        R: io::Read,
+        R: Read,
     {
         const BUFFER_SIZE: usize = CHUNK_HEADER_LEN as usize;
 
@@ -315,13 +315,13 @@ impl ChunkHeader {
     /// # Arguments
     ///
     /// * `reader` - The input stream. The reader must be positioned right after the root
-    ///              chunk header.
+    ///   chunk header.
     /// * `end` - The stream position where the chunk sequence ends. This is used to
-    ///           prevent searching past the end.
+    ///   prevent searching past the end.
     pub fn find_id3<F, R>(reader: R, end: u64) -> crate::id3::Result<Self>
     where
         F: ChunkFormat,
-        R: io::Read + io::Seek,
+        R: Read + Seek,
     {
         Self::find::<F, _>(&ID3_TAG, reader, end)?
             .ok_or_else(|| Error::new(ErrorKind::NoTag, "No tag chunk found!"))
@@ -333,13 +333,13 @@ impl ChunkHeader {
     ///
     /// * `tag` - The chunk tag to search for.
     /// * `reader` - The input stream. The reader must be positioned at the start of a
-    ///              sequence of chunks.
+    ///   sequence of chunks.
     /// * `end` - The stream position where the chunk sequence ends. This is used to
-    ///           prevent searching past the end.
+    ///   prevent searching past the end.
     fn find<F, R>(tag: &ChunkTag, mut reader: R, end: u64) -> crate::id3::Result<Option<Self>>
     where
         F: ChunkFormat,
-        R: io::Read + io::Seek,
+        R: Read + Seek,
     {
         let mut pos = 0;
 
@@ -368,7 +368,7 @@ impl ChunkHeader {
     pub fn write_to<F, W>(&self, mut writer: W) -> io::Result<()>
     where
         F: ChunkFormat,
-        W: io::Write,
+        W: Write,
     {
         const BUFFER_SIZE: usize = CHUNK_HEADER_LEN as usize;
 

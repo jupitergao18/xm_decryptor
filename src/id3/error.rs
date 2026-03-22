@@ -54,9 +54,9 @@ pub enum ErrorKind {
 pub struct Error {
     /// The kind of error.
     pub kind: ErrorKind,
-    /// A human readable string describing the error.
+    /// A human-readable string describing the error.
     pub description: String,
-    /// If any, the part of the tag that was able to be decoded before the error occurred.
+    /// If any, the part of the tag that could be decoded before the error occurred.
     pub partial_tag: Option<Tag>,
 }
 

@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use xm_decryptor::{xm, Result};
+use xm_decryptor::{Result, xm};
 
 fn main() -> Result<()> {
     let path = PathBuf::from(std::env::args().nth(1).expect("no input path"));

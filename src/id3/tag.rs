@@ -1,3 +1,4 @@
+use crate::id3::StorageFile;
 use crate::id3::chunk;
 use crate::id3::frame::{
     Chapter, Comment, EncapsulatedObject, ExtendedLink, ExtendedText, Frame, Lyrics, Picture,
@@ -7,7 +8,6 @@ use crate::id3::storage::{PlainStorage, Storage};
 use crate::id3::stream;
 use crate::id3::taglike::TagLike;
 use crate::id3::v1;
-use crate::id3::StorageFile;
 use std::fmt;
 use std::fs::{self, File};
 use std::io::{self, BufReader, Write};
@@ -127,7 +127,7 @@ impl<'a> Tag {
     /// Removes an ID3v2 tag from the specified file.
     ///
     /// Returns true if the file initially contained a tag.
-    pub fn remove_from_file(mut file: &mut fs::File) -> crate::id3::Result<bool> {
+    pub fn remove_from_file(mut file: &mut File) -> crate::id3::Result<bool> {
         let location = match stream::tag::locate_id3v2(&mut file)? {
             Some(l) => l,
             None => return Ok(false),
@@ -144,13 +144,13 @@ impl<'a> Tag {
         stream::tag::decode(reader)
     }
 
-    /// Attempts to read an ID3 tag via Tokio from the reader.
-    #[cfg(feature = "tokio")]
-    pub async fn async_read_from(
-        reader: impl tokio::io::AsyncRead + std::marker::Unpin,
-    ) -> crate::id3::Result<Tag> {
-        stream::tag::async_decode(reader).await
-    }
+    // /// Attempts to read an ID3 tag via Tokio from the reader.
+    // #[cfg(feature = "tokio")]
+    // pub async fn async_read_from(
+    //     reader: impl tokio::io::AsyncRead + std::marker::Unpin,
+    // ) -> crate::id3::Result<Tag> {
+    //     stream::tag::async_decode(reader).await
+    // }
 
     /// Attempts to read an ID3 tag from the file at the indicated path.
     pub fn read_from_path(path: impl AsRef<Path>) -> crate::id3::Result<Tag> {
@@ -158,12 +158,12 @@ impl<'a> Tag {
         Tag::read_from(file)
     }
 
-    /// Attempts to read an ID3 tag via Tokio from the file at the indicated path.
-    #[cfg(feature = "tokio")]
-    pub async fn async_read_from_path(path: impl AsRef<Path>) -> crate::id3::Result<Tag> {
-        let file = tokio::io::BufReader::new(tokio::fs::File::open(path).await?);
-        stream::tag::async_decode(file).await
-    }
+    // /// Attempts to read an ID3 tag via Tokio from the file at the indicated path.
+    // #[cfg(feature = "tokio")]
+    // pub async fn async_read_from_path(path: impl AsRef<Path>) -> crate::id3::Result<Tag> {
+    //     let file = tokio::io::BufReader::new(tokio::fs::File::open(path).await?);
+    //     stream::tag::async_decode(file).await
+    // }
 
     /// Reads an AIFF stream and returns any present ID3 tag.
     pub fn read_from_aiff(reader: impl io::Read + io::Seek) -> crate::id3::Result<Tag> {
@@ -177,7 +177,7 @@ impl<'a> Tag {
     }
 
     /// Reads an AIFF file and returns any present ID3 tag.
-    pub fn read_from_aiff_file(file: &mut fs::File) -> crate::id3::Result<Tag> {
+    pub fn read_from_aiff_file(file: &mut File) -> crate::id3::Result<Tag> {
         chunk::load_id3_chunk::<chunk::AiffFormat, _>(file)
     }
 
@@ -193,7 +193,7 @@ impl<'a> Tag {
     }
 
     /// Reads an WAV file and returns any present ID3 tag.
-    pub fn read_from_wav_file(file: &mut fs::File) -> crate::id3::Result<Tag> {
+    pub fn read_from_wav_file(file: &mut File) -> crate::id3::Result<Tag> {
         chunk::load_id3_chunk::<chunk::WavFormat, _>(file)
     }
 
@@ -201,7 +201,7 @@ impl<'a> Tag {
     ///
     /// Note that the plain tag is written, regardless of the original contents. To safely encode a
     /// tag to an MP3 file, use `Tag::write_to_file`.
-    pub fn write_to(&self, writer: impl io::Write, version: Version) -> crate::id3::Result<()> {
+    pub fn write_to(&self, writer: impl Write, version: Version) -> crate::id3::Result<()> {
         stream::tag::Encoder::new()
             .version(version)
             .encode(self, writer)
@@ -227,7 +227,7 @@ impl<'a> Tag {
         Ok(())
     }
 
-    /// Conventience function for [`write_to_file`].
+    /// Convenience function for [`write_to_file`].
     pub fn write_to_path(
         &self,
         path: impl AsRef<Path>,
@@ -255,11 +255,7 @@ impl<'a> Tag {
     }
 
     /// Overwrite AIFF file ID3 chunk in a file. The file must be opened read/write.
-    pub fn write_to_aiff_file(
-        &self,
-        file: &mut fs::File,
-        version: Version,
-    ) -> crate::id3::Result<()> {
+    pub fn write_to_aiff_file(&self, file: &mut File, version: Version) -> crate::id3::Result<()> {
         chunk::write_id3_chunk_file::<chunk::AiffFormat>(file, self, version)
     }
 
@@ -281,11 +277,7 @@ impl<'a> Tag {
     }
 
     /// Overwrite AIFF file ID3 chunk in a file. The file must be opened read/write.
-    pub fn write_to_wav_file(
-        &self,
-        file: &mut fs::File,
-        version: Version,
-    ) -> crate::id3::Result<()> {
+    pub fn write_to_wav_file(&self, file: &mut File, version: Version) -> crate::id3::Result<()> {
         chunk::write_id3_chunk_file::<chunk::WavFormat>(file, self, version)
     }
 
@@ -367,7 +359,7 @@ impl<'a> Tag {
         self.frames().filter_map(|frame| frame.content().lyrics())
     }
 
-    /// Returns an iterator over the synchronised lyrics frames in the tag.
+    /// Returns an iterator over the synchronized lyrics frames in the tag.
     pub fn synchronised_lyrics(&'a self) -> impl Iterator<Item = &'a SynchronisedLyrics> + 'a {
         self.frames()
             .filter_map(|frame| frame.content().synchronised_lyrics())

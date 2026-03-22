@@ -10,7 +10,7 @@ use std::str::FromStr;
 /// precise as possible the format of a time string is
 /// yyyy-MM-ddTHH:mm:ss (year, "-", month, "-", day, "T", hour (out of
 /// 24), ":", minutes, ":", seconds), but the precision may be reduced by
-/// removing as many time indicators as wanted. Hence valid timestamps
+/// removing as many time indicators as wanted. Hence, valid timestamps
 /// are yyyy, yyyy-MM, yyyy-MM-dd, yyyy-MM-ddTHH, yyyy-MM-ddTHH:mm and
 /// yyyy-MM-ddTHH:mm:ss. All time stamps are UTC.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash)]
@@ -137,11 +137,7 @@ impl Parser<'_> {
             };
             self.0 = &self.0[1..];
         }
-        if ok {
-            Ok(r)
-        } else {
-            Err(())
-        }
+        if ok { Ok(r) } else { Err(()) }
     }
 }
 

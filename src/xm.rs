@@ -1,7 +1,7 @@
-use crate::id3::{Tag, TagLike};
 use crate::Result;
+use crate::id3::{Tag, TagLike};
 
-use wasmer::{imports, Instance, Module, Store, Value};
+use wasmer::{Instance, Module, Store, Value, imports};
 use wasmer_compiler_cranelift::Cranelift;
 
 const XM_KEY: &[u8] = "ximalayaximalayaximalayaximalaya".as_bytes();
@@ -91,6 +91,7 @@ pub fn decrypt(xm_info: &XMInfo, content: &[u8]) -> Result<Vec<u8>> {
 }
 
 #[derive(Debug, Default, Clone)]
+#[allow(unused)]
 pub struct XMInfo {
     title: Option<String>,
     artist: Option<String>,
@@ -171,8 +172,9 @@ impl XMInfo {
 
         format!(
             "{} - {} - {}.{}",
-            self.artist.clone().unwrap_or_default(),
+            // self.artist.clone().unwrap_or_default(),
             self.album.clone().unwrap_or_default(),
+            self.tracknumber,
             self.title.clone().unwrap_or_default(),
             ext_name
         )

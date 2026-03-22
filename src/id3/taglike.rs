@@ -51,8 +51,8 @@ pub trait TagLike: private::Sealed {
     #[doc(hidden)]
     fn text_pair(&self, id: &str) -> Option<(u32, Option<u32>)> {
         // The '/' is the preferred character to separate these fields, but the ID3 spec states
-        // that frames may separate multple values on zero bytes.
-        // Therefore, we try to to split on both '/' and '\0'.
+        // that frames may separate multiple values on zero bytes.
+        // Therefore, we try to split on both '/' and '\0'.
         let text = self.get(id)?.content().text()?;
         let mut split = text.splitn(2, &['\0', '/'][..]);
         let a = split.next()?.parse().ok()?;
@@ -650,7 +650,7 @@ pub trait TagLike: private::Sealed {
     /// tag.set_genre("(31)");
     /// assert_eq!(tag.genre_parsed(), Some(Cow::Owned("Trance".to_string())));
     /// ```
-    fn genre_parsed(&self) -> Option<Cow<str>> {
+    fn genre_parsed(&'_ self) -> Option<Cow<'_, str>> {
         let tcon = self.text_for_frame_id("TCON")?;
         Some(crate::id3::tcon::Parser::parse_tcon(tcon))
     }
@@ -1338,7 +1338,7 @@ pub trait TagLike: private::Sealed {
         self.remove("USLT");
     }
 
-    /// Adds a synchronised lyrics frame (SYLT).
+    /// Adds a synchronized lyrics frame (SYLT).
     ///
     /// # Example
     /// ```
@@ -1364,7 +1364,7 @@ pub trait TagLike: private::Sealed {
         self.add_frame(lyrics);
     }
 
-    /// Removes all synchronised lyrics (SYLT) frames from the tag.
+    /// Removes all synchronized lyrics (SYLT) frames from the tag.
     ///
     /// # Example
     /// ```

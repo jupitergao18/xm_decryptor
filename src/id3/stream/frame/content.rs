@@ -141,7 +141,7 @@ impl<W: io::Write> Encoder<W> {
             _ => unreachable!(),
         })?;
         self.bytes(
-            &content
+            content
                 .lang
                 .bytes()
                 .chain(iter::repeat(b' '))
@@ -376,18 +376,18 @@ pub fn decode(
     let mut encoding = None;
     let content = match id {
         "PIC" => {
-            if cfg!(feature = "decode_picture") {
-                decoder.picture_content_v2()
-            } else {
-                Ok(Content::Unknown(Unknown { data, version }))
-            }
+            // if cfg!(feature = "decode_picture") {
+            //     decoder.picture_content_v2()
+            // } else {
+            Ok(Content::Unknown(Unknown { data, version }))
+            // }
         }
         "APIC" => {
-            if cfg!(feature = "decode_picture") {
-                decoder.picture_content_v3()
-            } else {
-                Ok(Content::Unknown(Unknown { data, version }))
-            }
+            // if cfg!(feature = "decode_picture") {
+            //     decoder.picture_content_v3()
+            // } else {
+            Ok(Content::Unknown(Unknown { data, version }))
+            // }
         }
         "TXXX" | "TXX" => {
             let (content, enc) = decoder.extended_text_content()?;
@@ -421,6 +421,7 @@ struct Decoder<'a> {
     version: Version,
 }
 
+#[allow(unused)]
 impl<'a> Decoder<'a> {
     fn bytes(&mut self, len: usize) -> crate::id3::Result<&'a [u8]> {
         if len > self.r.len() {
@@ -545,7 +546,7 @@ impl<'a> Decoder<'a> {
                 return Err(Error::new(
                     ErrorKind::UnsupportedFeature,
                     "can't determine MIME type for image format",
-                ))
+                ));
             }
         };
         let picture_type = self.picture_type()?;
@@ -592,7 +593,7 @@ impl<'a> Decoder<'a> {
             let r = match self.r.len() {
                 0..=8 => self.r,
                 9.. => &self.r[..8],
-                _ => unreachable!(),
+                // _ => unreachable!(),
             };
             let mut bin = [0; 8];
             bin[8 - r.len()..].copy_from_slice(r);
@@ -666,7 +667,7 @@ impl<'a> Decoder<'a> {
                 return Err(Error::new(
                     ErrorKind::Parsing,
                     "invalid SYLT timestamp format",
-                ))
+                ));
             }
         };
         let content_type = match self.byte()? {

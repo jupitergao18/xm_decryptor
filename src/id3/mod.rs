@@ -1,4 +1,4 @@
-pub use error::{partial_tag_ok, Error, ErrorKind, Result};
+pub use error::{Error, ErrorKind, Result, partial_tag_ok};
 pub use frame::{Content, Frame, Timestamp};
 pub use storage::StorageFile;
 pub use stream::encoding::Encoding;

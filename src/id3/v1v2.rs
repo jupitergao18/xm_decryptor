@@ -1,4 +1,4 @@
-use crate::id3::{v1, Error, ErrorKind, StorageFile, Tag, Version};
+use crate::id3::{Error, ErrorKind, StorageFile, Tag, Version, v1};
 use std::fs;
 use std::fs::File;
 use std::io;
@@ -71,7 +71,7 @@ pub fn write_to_file(
     Ok(())
 }
 
-/// Conventience function for [`write_to_file`].
+/// Convenience function for [`write_to_file`].
 pub fn write_to_path(
     path: impl AsRef<Path>,
     tag: &Tag,
@@ -95,7 +95,7 @@ pub fn remove_from_path(path: impl AsRef<Path>) -> crate::id3::Result<FormatVers
     })
 }
 
-/// An enum that represents the precense state of both tag format versions.
+/// An enum that represents the presence state of both tag format versions.
 #[derive(Copy, Clone, Debug, Hash, Ord, PartialOrd, Eq, PartialEq)]
 pub enum FormatVersion {
     /// No tags.

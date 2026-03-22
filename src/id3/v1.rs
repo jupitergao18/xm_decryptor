@@ -254,8 +254,8 @@ impl Tag {
                         .flat_map(|s| s.iter())
                         .take_while(|c| **c != 0)
                 })
-                // This works because the ISO 8859-1 code points match the unicode code
-                // points. So,`c as char` will map correctly from ISO to unicode.
+                // This works because the ISO 8859-1 code points match the UNICODE code
+                // points. So,`c as char` will map correctly from ISO to UNICODE.
                 .map(|c| *c as char)
                 .collect()
         }
@@ -363,10 +363,10 @@ impl Tag {
 
     /// Returns `genre_str`, falling back to translating `genre_id` to a string.
     pub fn genre(&self) -> Option<&str> {
-        if let Some(ref g) = self.genre_str {
-            if !g.is_empty() {
-                return Some(g.as_str());
-            }
+        if let Some(ref g) = self.genre_str
+            && !g.is_empty()
+        {
+            return Some(g.as_str());
         }
         GENRE_LIST.get(self.genre_id as usize).cloned()
     }

@@ -1,5 +1,5 @@
-use crate::id3::frame::content_cmp::ContentCmp::{Comparable, Incomparable, Same};
 use crate::id3::frame::Frame;
+use crate::id3::frame::content_cmp::ContentCmp::{Comparable, Incomparable, Same};
 use crate::id3::stream::encoding::Encoding;
 use crate::id3::tag::Version;
 use crate::id3::taglike::TagLike;
@@ -20,7 +20,7 @@ use std::io;
 /// decoders, that was expecting [`Unknown`].
 ///
 /// In order to prevent breakage when this library adds a new frame type, users must use the
-/// [`Content::to_unknown`] method which will return an [`Unknown`] regardlesss of whether the
+/// [`Content::to_unknown`] method which will return an [`Unknown`] regardless of whether the
 /// frame content was successfully decoded.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[non_exhaustive]
@@ -39,7 +39,7 @@ pub enum Content {
     Popularimeter(Popularimeter),
     /// A value containing the parsed contents of a lyrics frame (USLT).
     Lyrics(Lyrics),
-    /// A value containing the parsed contents of a synchronised lyrics frame (SYLT).
+    /// A value containing the parsed contents of a synchronized lyrics frame (SYLT).
     SynchronisedLyrics(SynchronisedLyrics),
     /// A value containing the parsed contents of a picture frame (APIC).
     Picture(Picture),
@@ -51,7 +51,7 @@ pub enum Content {
     MpegLocationLookupTable(MpegLocationLookupTable),
     /// A private frame (PRIV)
     Private(Private),
-    /// A value containing the parsed contents of a table of contents frame (CTOC).
+    /// A value containing the parsed contents of a table of contents frames (CTOC).
     TableOfContents(TableOfContents),
     /// A value containing the bytes of a currently unknown frame type.
     ///
@@ -349,7 +349,7 @@ impl From<ExtendedLink> for Frame {
     }
 }
 
-/// The parsed contents of an general encapsulated object frame.
+/// The parsed contents of a general encapsulated object frame.
 ///
 /// `EncapsulatedObject` stores its own encoding, rather than using the same encoding as rest of the tag, because some apps (ex. Serato) tend to write multiple GEOB tags with different encodings.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -413,7 +413,7 @@ impl From<Comment> for Frame {
 /// The parsed contents of a popularimeter frame.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Popularimeter {
-    /// An identifier for the user which performed the rating. Typically an email address.
+    /// An identifier for the user which performed the rating. Typically, an email address.
     pub user: String,
     /// The rating is 1-255 where 1 is worst and 255 is best. 0 is unknown.
     pub rating: u8,
@@ -459,7 +459,7 @@ impl From<Lyrics> for Frame {
     }
 }
 
-/// The parsed contents of an synchronized lyrics frame.
+/// The parsed contents of a synchronized lyrics frame.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[allow(missing_docs)]
 pub struct SynchronisedLyrics {
@@ -467,7 +467,7 @@ pub struct SynchronisedLyrics {
     pub timestamp_format: TimestampFormat,
     pub content_type: SynchronisedLyricsType,
     pub description: String,
-    // The content of a synchronised lyrics consists of the text segments mapped to a timestamp as
+    // The content of a synchronized lyrics consists of the text segments mapped to a timestamp as
     // specified by the `timestamp_format` field.
     pub content: Vec<(u32, String)>,
 }

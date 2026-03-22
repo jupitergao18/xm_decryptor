@@ -1,7 +1,7 @@
 //! Abstractions that expose a simple interface for reading and storing tags according to some
 //! underlying file format.
 //!
-//! The need for this abstraction arises from the differences that audiofiles have when storing
+//! The need for this abstraction arises from the differences that audio files have when storing
 //! metadata. For example, MP3 uses a header for ID3v2, a trailer for ID3v1 while WAV has a special
 //! "RIFF-chunk" which stores an ID3 tag.
 
@@ -14,16 +14,17 @@ use std::ops;
 const COPY_BUF_SIZE: usize = 65536;
 
 /// Refer to the module documentation.
+#[allow(unused)]
 pub trait Storage<'a> {
     type Reader: io::Read + io::Seek + 'a;
-    type Writer: io::Write + io::Seek + 'a;
+    type Writer: Write + io::Seek + 'a;
 
     /// Opens the storage for reading.
     fn reader(&'a mut self) -> io::Result<Self::Reader>;
     /// Opens the storage for writing.
     ///
-    /// The written data is comitted to persistent storage when the
-    /// writer is dropped, altough this will ignore any errors. The caller must manually commit by
+    /// The written data is committed to persistent storage when the
+    /// writer is dropped, although this will ignore any errors. The caller must manually commit by
     /// using `io::Write::flush` to check for errors.
     fn writer(&'a mut self) -> io::Result<Self::Writer>;
 }
@@ -39,18 +40,18 @@ where
 {
     /// The backing storage.
     file: F,
-    /// The region that may be writen to including any padding.
+    /// The region that may be written to including any padding.
     region: ops::Range<u64>,
 }
 
-/// This trait is the combination of the [`std::io`] stream traits with an additional method to resize the
+/// This trait is the combination of the [`io`] stream traits with an additional method to resize the
 /// file.
-pub trait StorageFile: io::Read + io::Write + io::Seek + private::Sealed {
-    /// Performs the resize. Assumes the same behaviour as [`std::fs::File::set_len`].
+pub trait StorageFile: io::Read + Write + io::Seek + private::Sealed {
+    /// Performs the resize. Assumes the same behaviour as [`fs::File::set_len`].
     fn set_len(&mut self, new_len: u64) -> io::Result<()>;
 }
 
-impl<'a, T> StorageFile for &'a mut T
+impl<T> StorageFile for &mut T
 where
     T: StorageFile,
 {
@@ -159,13 +160,13 @@ where
     F: StorageFile + 'a,
 {
     storage: &'a mut PlainStorage<F>,
-    /// Data is writen to this buffer before it is committed to the underlying storage.
+    /// Data is written to this buffer before it is committed to the underlying storage.
     buffer: io::Cursor<Vec<u8>>,
     /// A flag indicating that the buffer has been written to.
     buffer_changed: bool,
 }
 
-impl<'a, F> io::Write for PlainWriter<'a, F>
+impl<'a, F> Write for PlainWriter<'a, F>
 where
     F: StorageFile,
 {
@@ -283,7 +284,7 @@ where
 mod private {
     pub trait Sealed {}
 
-    impl<'a, T: Sealed> Sealed for &'a mut T {}
+    impl<T: Sealed> Sealed for &mut T {}
     impl Sealed for std::fs::File {}
     impl Sealed for std::io::Cursor<Vec<u8>> {}
 }

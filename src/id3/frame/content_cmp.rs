@@ -6,7 +6,7 @@ pub enum ContentCmp<'a> {
     /// used to mark frames to be always different (for example for unknown frames)
     Incomparable,
     /// used to mark frames as identical regardless of their content
-    /// (for example for frames which require an unique id)
+    /// (for example for frames which require a unique id)
     /// <br>(Note: both values must be <code>Same</code> or else they would not be equal)
     Same,
 }

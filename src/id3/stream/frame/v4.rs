@@ -5,8 +5,8 @@ use crate::id3::tag::Version;
 use crate::id3::{Error, ErrorKind};
 use bitflags::bitflags;
 use byteorder::{BigEndian, ByteOrder, ReadBytesExt, WriteBytesExt};
-use flate2::write::ZlibEncoder;
 use flate2::Compression;
+use flate2::write::ZlibEncoder;
 use std::io;
 
 bitflags! {
@@ -105,10 +105,10 @@ pub fn encode(
         (content_buf.len() + comp_hint_delta) as u32,
     ))?;
     writer.write_u16::<BigEndian>(flags.bits())?;
-    if let Some(s) = decompressed_size {
-        if flags.contains(Flags::DATA_LENGTH_INDICATOR) {
-            writer.write_u32::<BigEndian>(unsynch::encode_u32(s as u32))?;
-        }
+    if let Some(s) = decompressed_size
+        && flags.contains(Flags::DATA_LENGTH_INDICATOR)
+    {
+        writer.write_u32::<BigEndian>(unsynch::encode_u32(s as u32))?;
     }
     writer.write_all(&content_buf)?;
     Ok(10 + comp_hint_delta + content_buf.len())
